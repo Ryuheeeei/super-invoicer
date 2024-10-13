@@ -1,0 +1,6 @@
+.editorconfig
+.gitignore
+c.out
+compose.yaml
+Makefile
+README.md
