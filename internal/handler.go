@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -26,13 +27,13 @@ type ListResponse struct {
 }
 
 type Finder interface {
-	Find(string, time.Time) ([]domain.Invoice, error)
+	Find(context.Context, string, time.Time) ([]domain.Invoice, error)
 }
 
-type FinderFunc func(string, time.Time) ([]domain.Invoice, error)
+type FinderFunc func(context.Context, string, time.Time) ([]domain.Invoice, error)
 
-func (f FinderFunc) Find(s string, date time.Time) ([]domain.Invoice, error) {
-	return f(s, date)
+func (f FinderFunc) Find(ctx context.Context, s string, date time.Time) ([]domain.Invoice, error) {
+	return f(ctx, s, date)
 }
 
 func ListHandler(finder Finder, logger *slog.Logger) http.HandlerFunc {
@@ -50,7 +51,7 @@ func ListHandler(finder Finder, logger *slog.Logger) http.HandlerFunc {
 			w.Write([]byte(`{"message":"Can't convert duedate parameter to date"}`))
 			return
 		}
-		invoices, err := finder.Find(companyID, dueDate)
+		invoices, err := finder.Find(r.Context(), companyID, dueDate)
 		if err != nil {
 			logger.ErrorContext(r.Context(), "Failed to find invoices", "customer_id", companyID, "due_date", dueDate, "err", err)
 			w.WriteHeader(http.StatusInternalServerError)

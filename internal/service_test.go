@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -73,11 +74,11 @@ func TestFindService_Find(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			selector := SelectorFunc(func(string, time.Time) (*Rows, error) {
+			selector := SelectorFunc(func(context.Context, string, time.Time) (*Rows, error) {
 				return tt.rows, tt.err
 			})
 			s := FindService{Selector: selector}
-			got, err := s.Find("1", time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC))
+			got, err := s.Find(context.Background(), "1", time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC))
 			assert.Equal(t, tt.wantErr, err)
 			assert.Equal(t, tt.want, got)
 		})
