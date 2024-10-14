@@ -15,7 +15,8 @@ var app = cobra.Command{
 	Long:  "App for creating and getting invoices.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-		http.HandleFunc("GET /api/invoices", internal.ListHandler(&internal.FindService{}, logger))
+		mysqlClient := &internal.MySQL{}
+		http.HandleFunc("GET /api/invoices", internal.ListHandler(&internal.FindService{Selector: mysqlClient}, logger))
 		if err := http.ListenAndServe(":8080", nil); err != http.ErrServerClosed {
 			return err
 		}
