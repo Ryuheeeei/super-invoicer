@@ -2,10 +2,15 @@ package internal
 
 import (
 	"context"
+	"database/sql"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-type MySQL struct{}
+type MySQL struct {
+	DB *sql.DB
+}
 
 var _ Selector = (*MySQL)(nil)
 
@@ -14,6 +19,8 @@ type Rows struct {
 }
 
 type Row struct {
+	InvoiceID string
+	CompanyID string
 	IssueDate time.Time
 	Amount    int
 	Fee       int
@@ -26,26 +33,28 @@ type Row struct {
 }
 
 func (s *MySQL) Select(ctx context.Context, companyID string, dueDate time.Time) (*Rows, error) {
-	return &Rows{Rows: []Row{
-		{
-			IssueDate: time.Date(1970, 1, 1, 9, 0, 0, 0, time.UTC),
-			Amount:    10000,
-			Fee:       400,
-			FeeRate:   0.04,
-			Tax:       40,
-			TaxRate:   0.10,
-			DueDate:   time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
-			Status:    "Processing",
-		},
-		{
-			IssueDate: time.Date(1970, 1, 2, 9, 0, 0, 0, time.UTC),
-			Amount:    5000,
-			Fee:       200,
-			FeeRate:   0.04,
-			Tax:       20,
-			TaxRate:   0.10,
-			DueDate:   time.Date(2024, 12, 1, 0, 0, 0, 0, time.UTC),
-			Status:    "Processing",
-		},
-	}}, nil
+	var results []Row
+	rows, err := s.DB.QueryContext(ctx, "SELECT invoice_id, company_id, issue_date, amount, fee, fee_rate, tax, tax_rate, total, due_date, status FROM invoice WHERE company_id = ? AND due_date BETWEEN ? AND ?;", companyID, time.Now().Format(time.DateOnly), dueDate.Format(time.DateOnly))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var row Row
+		var issueDate string
+		var dueDate string
+		if err := rows.Scan(&row.InvoiceID, &row.CompanyID, &issueDate, &row.Amount, &row.Fee, &row.FeeRate, &row.Tax, &row.TaxRate, &row.Total, &dueDate, &row.Status); err != nil {
+			break
+		}
+		row.IssueDate, err = time.ParseInLocation(time.DateOnly, issueDate, time.UTC)
+		if err != nil {
+			return nil, err
+		}
+		row.DueDate, err = time.ParseInLocation(time.DateOnly, dueDate, time.UTC)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, row)
+	}
+	return &Rows{Rows: results}, nil
 }
