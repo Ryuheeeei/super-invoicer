@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"time"
 )
 
@@ -24,7 +25,7 @@ type Row struct {
 	Status    string
 }
 
-func (s *MySQL) Select(companyID string, dueDate time.Time) (*Rows, error) {
+func (s *MySQL) Select(ctx context.Context, companyID string, dueDate time.Time) (*Rows, error) {
 	return &Rows{Rows: []Row{
 		{
 			IssueDate: time.Date(1970, 1, 1, 9, 0, 0, 0, time.UTC),

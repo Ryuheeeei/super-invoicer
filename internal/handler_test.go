@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log/slog"
@@ -83,7 +84,7 @@ func TestListHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			finder := FinderFunc(func(s string, t time.Time) ([]domain.Invoice, error) {
+			finder := FinderFunc(func(context.Context, string, time.Time) ([]domain.Invoice, error) {
 				return tt.invoices, tt.finderErr
 			})
 			w := httptest.NewRecorder()
