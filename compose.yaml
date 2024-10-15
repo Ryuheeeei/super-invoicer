@@ -1,12 +1,15 @@
 services:
   super-invoicer:
     build: .
+    environment:
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "8080:8080"
   db:
     image: mysql:8.4.2
     environment:
-      MYSQL_ROOT_PASSWORD: mysql # must not defined like this in production env.
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ./data/:/docker-entrypoint-initdb.d
     ports:

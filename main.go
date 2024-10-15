@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Ryuheeeei/super-invoicer/internal"
+	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
 )
 
@@ -17,8 +18,16 @@ var app = cobra.Command{
 	Long:  "App for creating and getting invoices.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-		// NOTE: should be set using mysql.FormatDSN()
-		db, err := sql.Open("mysql", "root:mysql@tcp(upsider-db-1:3306)/invoice_db")
+		c := mysql.Config{
+			User:                 os.Getenv("MYSQL_USERNAME"),
+			Passwd:               os.Getenv("MYSQL_PASSWORD"),
+			Net:                  "tcp",
+			Addr:                 "upsider-db-1:3306",
+			DBName:               "invoice_db",
+			AllowNativePasswords: true,
+		}
+		slog.Info("Connecting to mysql", "dataSoruceName", c.FormatDSN())
+		db, err := sql.Open("mysql", c.FormatDSN())
 		if err != nil {
 			return err
 		}
