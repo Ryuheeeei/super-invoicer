@@ -44,3 +44,20 @@ func (s *FindService) Find(ctx context.Context, companyID string, dueDate time.T
 	}
 	return invoices, nil
 }
+
+type RegisterService struct{}
+
+var _ Registerer = (*RegisterService)(nil)
+
+func (s *RegisterService) Register(ctx context.Context, company_id string, issue_date time.Time, amount int, due_date time.Time, status string) (*domain.Invoice, error) {
+	return &domain.Invoice{
+		IssueDate: issue_date,
+		Amount:    amount,
+		Fee:       400,
+		FeeRate:   0.04,
+		Tax:       40,
+		TaxRate:   0.10,
+		DueDate:   due_date,
+		Status:    domain.Status(status),
+	}, nil
+}
