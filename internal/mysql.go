@@ -36,7 +36,7 @@ type Row struct {
 
 func (s *MySQL) Select(ctx context.Context, companyID string, dueDate time.Time) (*Rows, error) {
 	var results []Row
-	rows, err := s.DB.QueryContext(ctx, "SELECT invoice_id, company_id, issue_date, amount, fee, fee_rate, tax, tax_rate, total, due_date, status FROM invoice WHERE company_id = ? AND due_date BETWEEN ? AND ?;", companyID, time.Now().Format(time.DateOnly), dueDate.Format(time.DateOnly))
+	rows, err := s.DB.QueryContext(ctx, "SELECT invoice_id, company_id, issue_date, amount, fee, fee_rate, tax, tax_rate, total, due_date, status FROM invoice WHERE company_id = ? AND due_date BETWEEN ? AND ? AND status != 'paid';", companyID, time.Now().Format(time.DateOnly), dueDate.Format(time.DateOnly))
 	if err != nil {
 		return nil, err
 	}

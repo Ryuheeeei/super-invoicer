@@ -40,7 +40,7 @@ func TestMySQL_Select(t *testing.T) {
 			require.NoError(t, err)
 			defer db.Close()
 
-			mock.ExpectQuery(regexp.QuoteMeta("SELECT invoice_id, company_id, issue_date, amount, fee, fee_rate, tax, tax_rate, total, due_date, status FROM invoice WHERE company_id = ? AND due_date BETWEEN ? AND ?;")).WithArgs("1", time.Now().Format(time.DateOnly), "9999-12-31").WillReturnRows(
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT invoice_id, company_id, issue_date, amount, fee, fee_rate, tax, tax_rate, total, due_date, status FROM invoice WHERE company_id = ? AND due_date BETWEEN ? AND ? AND status != 'paid';")).WithArgs("1", time.Now().Format(time.DateOnly), "9999-12-31").WillReturnRows(
 				sqlmock.NewRows([]string{"invoice_id", "company_id", "issue_date", "amount", "fee", "fee_rate", "tax", "tax_rate", "total", "due_date", "status"}).AddRow(tt.row...))
 
 			s := &MySQL{DB: db}
