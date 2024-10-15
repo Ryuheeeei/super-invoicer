@@ -184,3 +184,62 @@ func TestCreateHandler(t *testing.T) {
 		})
 	}
 }
+
+func TestBasicAuthMiddleWware(t *testing.T) {
+	username := "USERNAME"
+	password := "PASSWORD"
+	tests := []struct {
+		name     string
+		req      *http.Request
+		handler  http.Handler
+		wantCode int
+		wantBody string
+	}{
+		{
+			name: "next handler with valid credentials",
+			req:  newRequestWithBasicAuth(username, password),
+			handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte("Next handler called"))
+			}),
+			wantCode: http.StatusOK,
+			wantBody: "Next handler called",
+		},
+		{
+			name: "401 unauthorized without credentials",
+			req:  httptest.NewRequest(http.MethodGet, "http://localhost", nil),
+			handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				require.FailNow(t, "next handler should not be called")
+			}),
+			wantCode: http.StatusUnauthorized,
+			wantBody: `{"message":"Authorization Header doesn't exist"}`,
+		},
+		{
+			name: "401 unauthorized with invalid credentials",
+			req:  newRequestWithBasicAuth(username, "INVALID"),
+			handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				require.FailNow(t, "next handler should not be called")
+			}),
+			wantCode: http.StatusUnauthorized,
+			wantBody: `{"message":"Unauthorized"}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			BasicAuthMiddleware(username, password, tt.handler).ServeHTTP(w, tt.req)
+
+			assert.Equal(t, tt.wantCode, w.Code)
+
+			b, err := io.ReadAll(w.Body)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantBody, string(b))
+		})
+	}
+}
+
+func newRequestWithBasicAuth(username, password string) *http.Request {
+	r := httptest.NewRequest(http.MethodGet, "http://localhost", nil)
+	r.SetBasicAuth(username, password)
+	return r
+}

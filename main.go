@@ -13,7 +13,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var app = cobra.Command{
+var (
+	basicAuthEnable   bool
+	basicAuthUsername string
+	basicAuthPassword string
+)
+
+func init() {
+	app.Flags().BoolVar(&basicAuthEnable, "basic-auth.enable", false, "Enable basic authentication or not")
+	app.Flags().StringVar(&basicAuthUsername, "basic-auth.username", "", "Username for basic authentication")
+	app.Flags().StringVar(&basicAuthPassword, "basic-auth.password", "", "Password for basic authentication")
+}
+
+var app = &cobra.Command{
 	Short: "Super Invoicer",
 	Long:  "App for creating and getting invoices.",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -37,8 +49,17 @@ var app = cobra.Command{
 		db.SetMaxOpenConns(10)
 		db.SetMaxIdleConns(10)
 		mysqlClient := &internal.MySQL{DB: db}
-		http.HandleFunc("GET /api/invoices", internal.ListHandler(&internal.FindService{Selector: mysqlClient}, logger))
-		http.HandleFunc("POST /api/invoices", internal.CreateHandler(&internal.RegisterService{Inserter: mysqlClient}, logger))
+
+		var listHandler http.HandlerFunc = internal.ListHandler(&internal.FindService{Selector: mysqlClient}, logger)
+		var createHandler http.HandlerFunc = internal.CreateHandler(&internal.RegisterService{Inserter: mysqlClient}, logger)
+		if basicAuthEnable {
+			slog.InfoContext(cmd.Context(), "Enable Basic Authentication")
+			listHandler = internal.BasicAuthMiddleware(basicAuthUsername, basicAuthPassword, listHandler)
+			createHandler = internal.BasicAuthMiddleware(basicAuthUsername, basicAuthPassword, createHandler)
+		}
+
+		http.HandleFunc("GET /api/invoices", listHandler)
+		http.HandleFunc("POST /api/invoices", createHandler)
 		if err := http.ListenAndServe(":8080", nil); err != http.ErrServerClosed {
 			return err
 		}

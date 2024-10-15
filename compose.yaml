@@ -1,6 +1,10 @@
 services:
   super-invoicer:
     build: .
+    command:
+      - --basic-auth.enable
+      - --basic-auth.username=foo
+      - --basic-auth.password=bar
     environment:
       MYSQL_USERNAME: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
