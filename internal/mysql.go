@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/Ryuheeeei/super-invoicer/internal/domain"
@@ -61,8 +62,33 @@ func (s *MySQL) Select(ctx context.Context, companyID string, dueDate time.Time)
 }
 
 func (s *MySQL) Insert(ctx context.Context, companyID string, invoice *domain.Invoice) (*Row, error) {
+	tx, err := s.DB.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback() // The rollback will be ignored if the tx has been committed later in the function.
+
+	stmt, err := s.DB.PrepareContext(ctx, "INSERT INTO invoice (company_id, issue_date, amount, fee, fee_rate, tax, tax_rate, total, due_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.ExecContext(ctx, companyID, invoice.IssueDate, invoice.Amount, invoice.Fee, invoice.FeeRate, invoice.Tax, invoice.TaxRate, invoice.Total, invoice.DueDate, invoice.Status)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	// get auto-incremented invoice_id
+	invoiceID, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
 	return &Row{
-		InvoiceID: "1",
+		InvoiceID: strconv.FormatInt(invoiceID, 10),
 		CompanyID: companyID,
 		IssueDate: invoice.IssueDate,
 		Amount:    invoice.Amount,
