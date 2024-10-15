@@ -37,6 +37,7 @@ func (s *FindService) Find(ctx context.Context, companyID string, dueDate time.T
 				FeeRate:   row.FeeRate,
 				Tax:       row.Tax,
 				TaxRate:   row.TaxRate,
+				Total:     row.Total,
 				DueDate:   row.DueDate,
 				Status:    domain.Status(row.Status),
 			},
