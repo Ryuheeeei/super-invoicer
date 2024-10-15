@@ -29,6 +29,7 @@ var app = cobra.Command{
 		db.SetMaxIdleConns(10)
 		mysqlClient := &internal.MySQL{DB: db}
 		http.HandleFunc("GET /api/invoices", internal.ListHandler(&internal.FindService{Selector: mysqlClient}, logger))
+		http.HandleFunc("POST /api/invoices", internal.CreateHandler(&internal.RegisterService{}, logger))
 		if err := http.ListenAndServe(":8080", nil); err != http.ErrServerClosed {
 			return err
 		}
