@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/Ryuheeeei/super-invoicer/internal/domain"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -57,4 +58,20 @@ func (s *MySQL) Select(ctx context.Context, companyID string, dueDate time.Time)
 		results = append(results, row)
 	}
 	return &Rows{Rows: results}, nil
+}
+
+func (s *MySQL) Insert(ctx context.Context, companyID string, invoice *domain.Invoice) (*Row, error) {
+	return &Row{
+		InvoiceID: "1",
+		CompanyID: companyID,
+		IssueDate: invoice.IssueDate,
+		Amount:    invoice.Amount,
+		Fee:       invoice.Fee,
+		FeeRate:   invoice.FeeRate,
+		Tax:       invoice.Tax,
+		TaxRate:   invoice.TaxRate,
+		Total:     invoice.Total,
+		DueDate:   invoice.DueDate,
+		Status:    string(invoice.Status),
+	}, nil
 }

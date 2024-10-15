@@ -45,19 +45,35 @@ func (s *FindService) Find(ctx context.Context, companyID string, dueDate time.T
 	return invoices, nil
 }
 
-type RegisterService struct{}
+type Inserter interface {
+	Insert(context.Context, string, *domain.Invoice) (*Row, error)
+}
 
-var _ Registerer = (*RegisterService)(nil)
+type InserterFunc func(context.Context, string, *domain.Invoice) (*Row, error)
 
-func (s *RegisterService) Register(ctx context.Context, company_id string, issue_date time.Time, amount int, due_date time.Time, status string) (*domain.Invoice, error) {
+func (f InserterFunc) Insert(ctx context.Context, companyID string, invoice *domain.Invoice) (*Row, error) {
+	return f(ctx, companyID, invoice)
+}
+
+type RegisterService struct {
+	Inserter Inserter
+}
+
+func (s *RegisterService) Register(ctx context.Context, companyID string, issueDate time.Time, amount int, dueDate time.Time, status string) (*domain.Invoice, error) {
+	invoice := domain.NewInvoice(issueDate, dueDate, amount, status)
+	row, err := s.Inserter.Insert(ctx, companyID, invoice)
+	if err != nil {
+		return nil, fmt.Errorf("insert error: %w", err)
+	}
 	return &domain.Invoice{
-		IssueDate: issue_date,
-		Amount:    amount,
-		Fee:       400,
-		FeeRate:   0.04,
-		Tax:       40,
-		TaxRate:   0.10,
-		DueDate:   due_date,
-		Status:    domain.Status(status),
+		IssueDate: row.IssueDate,
+		Amount:    row.Amount,
+		Fee:       row.Fee,
+		FeeRate:   row.FeeRate,
+		Tax:       row.Tax,
+		TaxRate:   row.TaxRate,
+		DueDate:   row.DueDate,
+		Total:     row.Total,
+		Status:    domain.Status(row.Status),
 	}, nil
 }

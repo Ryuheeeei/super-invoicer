@@ -52,7 +52,7 @@ func TestListHandler(t *testing.T) {
 					Status:    domain.Processing,
 				},
 			},
-			wantBody: `{"invoices":[{"issue_date":"1970-01-01T09:00:00Z","ammount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"},{"issue_date":"1970-01-02T09:00:00Z","ammount":5000,"fee":200,"fee_rate":0.04,"tax":20,"tax_rate":0.1,"total":0,"due_date":"2024-12-01T00:00:00Z","status":"processing"}]}` + "\n",
+			wantBody: `{"invoices":[{"issue_date":"1970-01-01T09:00:00Z","amount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"},{"issue_date":"1970-01-02T09:00:00Z","amount":5000,"fee":200,"fee_rate":0.04,"tax":20,"tax_rate":0.1,"total":0,"due_date":"2024-12-01T00:00:00Z","status":"processing"}]}` + "\n",
 			wantCode: http.StatusOK,
 		},
 		{
@@ -125,7 +125,7 @@ func TestCreateHandler(t *testing.T) {
 				DueDate:   time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
 				Status:    domain.Processing,
 			},
-			wantBody: `{"issue_date":"1970-01-01T09:00:00Z","ammount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"}` + "\n",
+			wantBody: `{"issue_date":"1970-01-01T09:00:00Z","amount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"}` + "\n",
 			wantCode: http.StatusOK,
 		},
 		{
