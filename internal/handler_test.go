@@ -32,6 +32,8 @@ func TestListHandler(t *testing.T) {
 			query: "?company_id=1&due_date=1970-01-01",
 			invoices: []domain.Invoice{
 				{
+					InvoiceID: "1",
+					CompanyID: "1",
 					IssueDate: time.Date(1970, 1, 1, 9, 0, 0, 0, time.UTC),
 					Amount:    10000,
 					Fee:       400,
@@ -42,6 +44,8 @@ func TestListHandler(t *testing.T) {
 					Status:    domain.Processing,
 				},
 				{
+					InvoiceID: "2",
+					CompanyID: "1",
 					IssueDate: time.Date(1970, 1, 2, 9, 0, 0, 0, time.UTC),
 					Amount:    5000,
 					Fee:       200,
@@ -52,7 +56,7 @@ func TestListHandler(t *testing.T) {
 					Status:    domain.Processing,
 				},
 			},
-			wantBody: `{"invoices":[{"issue_date":"1970-01-01T09:00:00Z","amount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"},{"issue_date":"1970-01-02T09:00:00Z","amount":5000,"fee":200,"fee_rate":0.04,"tax":20,"tax_rate":0.1,"total":0,"due_date":"2024-12-01T00:00:00Z","status":"processing"}]}` + "\n",
+			wantBody: `{"invoices":[{"invoice_id":"1","company_id":"1","issue_date":"1970-01-01T09:00:00Z","amount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"},{"invoice_id":"2","company_id":"1","issue_date":"1970-01-02T09:00:00Z","amount":5000,"fee":200,"fee_rate":0.04,"tax":20,"tax_rate":0.1,"total":0,"due_date":"2024-12-01T00:00:00Z","status":"processing"}]}` + "\n",
 			wantCode: http.StatusOK,
 		},
 		{
@@ -116,6 +120,7 @@ func TestCreateHandler(t *testing.T) {
 			name: "200 ok with created invoice",
 			body: `{"company_id":"1","amount":10000,"issue_date":"1970-01-01","due_date":"2024-10-30","status":"processing"}`,
 			invoice: &domain.Invoice{
+				InvoiceID: "1",
 				IssueDate: time.Date(1970, 1, 1, 9, 0, 0, 0, time.UTC),
 				Amount:    10000,
 				Fee:       400,
@@ -125,7 +130,7 @@ func TestCreateHandler(t *testing.T) {
 				DueDate:   time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
 				Status:    domain.Processing,
 			},
-			wantBody: `{"issue_date":"1970-01-01T09:00:00Z","amount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"}` + "\n",
+			wantBody: `{"invoice_id":"1","company_id":"1","issue_date":"1970-01-01T09:00:00Z","amount":10000,"fee":400,"fee_rate":0.04,"tax":40,"tax_rate":0.1,"total":0,"due_date":"2024-10-30T00:00:00Z","status":"processing"}` + "\n",
 			wantCode: http.StatusOK,
 		},
 		{

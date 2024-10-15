@@ -5,6 +5,8 @@ import (
 )
 
 type Invoice struct {
+	InvoiceID string
+	CompanyID string
 	IssueDate time.Time
 	Amount    int
 	Fee       int
