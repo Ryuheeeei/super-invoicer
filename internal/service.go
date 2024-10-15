@@ -31,6 +31,8 @@ func (s *FindService) Find(ctx context.Context, companyID string, dueDate time.T
 	for _, row := range rows.Rows {
 		invoices = append(invoices,
 			domain.Invoice{
+				InvoiceID: row.InvoiceID,
+				CompanyID: row.CompanyID,
 				IssueDate: row.IssueDate,
 				Amount:    row.Amount,
 				Fee:       row.Fee,
@@ -67,6 +69,8 @@ func (s *RegisterService) Register(ctx context.Context, companyID string, issueD
 		return nil, fmt.Errorf("insert error: %w", err)
 	}
 	return &domain.Invoice{
+		InvoiceID: row.InvoiceID,
+		CompanyID: row.CompanyID,
 		IssueDate: row.IssueDate,
 		Amount:    row.Amount,
 		Fee:       row.Fee,

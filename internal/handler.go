@@ -12,6 +12,8 @@ import (
 )
 
 type InvoiceResponse struct {
+	InvoiceID string    `json:"invoice_id"`
+	CompanyID string    `json:"company_id"`
 	IssueDate time.Time `json:"issue_date"`
 	Amount    int       `json:"amount"`
 	Fee       int       `json:"fee"`
@@ -63,6 +65,8 @@ func ListHandler(finder Finder, logger *slog.Logger) http.HandlerFunc {
 		resp := make([]InvoiceResponse, 0)
 		for _, invoice := range invoices {
 			resp = append(resp, InvoiceResponse{
+				InvoiceID: invoice.InvoiceID,
+				CompanyID: invoice.CompanyID,
 				IssueDate: invoice.IssueDate,
 				Amount:    invoice.Amount,
 				Fee:       invoice.Fee,
@@ -141,7 +145,7 @@ func CreateHandler(registerer Registerer, logger *slog.Logger) http.HandlerFunc 
 			w.Write([]byte(`{"message":"Failed to create invoice"}`))
 			return
 		}
-		if err := json.NewEncoder(w).Encode(InvoiceResponse{IssueDate: invoice.IssueDate, Amount: invoice.Amount, Fee: invoice.Fee, FeeRate: invoice.FeeRate, Tax: invoice.Tax, TaxRate: invoice.TaxRate, Total: invoice.Total, DueDate: invoice.DueDate, Status: string(invoice.Status)}); err != nil {
+		if err := json.NewEncoder(w).Encode(InvoiceResponse{InvoiceID: invoice.InvoiceID, CompanyID: body.CompanyID, IssueDate: invoice.IssueDate, Amount: invoice.Amount, Fee: invoice.Fee, FeeRate: invoice.FeeRate, Tax: invoice.Tax, TaxRate: invoice.TaxRate, Total: invoice.Total, DueDate: invoice.DueDate, Status: string(invoice.Status)}); err != nil {
 			logger.ErrorContext(r.Context(), "Failed to encode created invoice to json", "invoice", invoice)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(`{"message":"Failed to encode created invoice"}`))
@@ -152,7 +156,6 @@ func CreateHandler(registerer Registerer, logger *slog.Logger) http.HandlerFunc 
 
 func BasicAuthMiddleware(username, password string, next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("header", "header", r.Header)
 		user, pass, ok := r.BasicAuth()
 		if !ok {
 			w.WriteHeader(http.StatusUnauthorized)
