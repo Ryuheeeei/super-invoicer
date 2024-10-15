@@ -149,3 +149,21 @@ func CreateHandler(registerer Registerer, logger *slog.Logger) http.HandlerFunc 
 		}
 	}
 }
+
+func BasicAuthMiddleware(username, password string, next http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("header", "header", r.Header)
+		user, pass, ok := r.BasicAuth()
+		if !ok {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"message":"Authorization Header doesn't exist"}`))
+			return
+		}
+		if user != username || pass != password {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"message":"Unauthorized"}`))
+			return
+		}
+		next.ServeHTTP(w, r)
+	}
+}
