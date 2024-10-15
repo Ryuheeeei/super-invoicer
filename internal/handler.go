@@ -13,7 +13,7 @@ import (
 
 type InvoiceResponse struct {
 	IssueDate time.Time `json:"issue_date"`
-	Amount    int       `json:"ammount"`
+	Amount    int       `json:"amount"`
 	Fee       int       `json:"fee"`
 	FeeRate   float32   `json:"fee_rate"`
 	Tax       int       `json:"tax"`
@@ -86,7 +86,7 @@ func ListHandler(finder Finder, logger *slog.Logger) http.HandlerFunc {
 type InvoiceRequest struct {
 	CompanyID string `json:"company_id"`
 	IssueDate string `json:"issue_date"`
-	Amount    int    `json:"ammount"`
+	Amount    int    `json:"amount"`
 	DueDate   string `json:"due_date"`
 	Status    string `json:"status"`
 }
