@@ -101,7 +101,7 @@ func TestRegisterService_Insert(t *testing.T) {
 		wantErr  error
 	}{
 		{
-			name: "selector returns rows",
+			name: "inserter returns inserted row",
 			args: args{companyID: "1", issueDate: time.Date(1970, 1, 1, 9, 0, 0, 0, time.UTC), amount: 10000, dueDate: time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC), status: "unprocessed"},
 			inserter: InserterFunc(func(ctx context.Context, companyID string, invoice *domain.Invoice) (*Row, error) {
 				assert.Equal(t, "1", companyID)
